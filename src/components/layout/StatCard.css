@@ -1,0 +1,116 @@
+/* src/components/StatCard.css */
+.stat-card {
+    width: 100%;
+    height: 150px;
+    perspective: 1000px;
+    margin-bottom: 15px;
+}
+
+.stat-card.clickable {
+    cursor: pointer;
+    transition: transform 0.2s;
+}
+
+.stat-card.clickable:active {
+    transform: scale(0.98);
+}
+
+.stat-card-inner {
+    width: 100%;
+    height: 100%;
+    position: relative;
+    transform-style: preserve-3d;
+    transition: transform 0.8s;
+}
+
+.stat-card:hover .stat-card-inner {
+    transform: rotateY(180deg);
+}
+
+.stat-card-front,
+.stat-card-back {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    backface-visibility: hidden;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-width: 4px;
+    border-style: solid;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+
+.stat-card-front {
+    color: #fff;
+    transform: rotateY(0deg);
+}
+
+.stat-card-back {
+    color: #fff;
+    transform: rotateY(180deg);
+}
+
+.icon-container {
+    text-align: center;
+}
+
+.icon-container .title {
+    margin-top: 10px;
+    font-size: 18px;
+}
+
+.stat-card-back .content {
+    text-align: center;
+}
+
+.stat-card-back .count {
+    font-size: 32px;
+    margin-bottom: 5px;
+    margin-top: 0;
+}
+
+.stat-card-back .growth {
+    font-size: 14px;
+}
+
+.stat-card-back .link-hint {
+    font-size: 12px;
+    margin-top: 10px;
+    opacity: 0.8;
+    font-style: italic;
+}
+
+/* Media queries pour la responsivité */
+@media (max-width: 768px) {
+    .stat-card {
+        height: 130px;
+    }
+
+    .icon-container .title {
+        font-size: 16px;
+    }
+
+    .stat-card-back .count {
+        font-size: 28px;
+    }
+}
+
+@media (max-width: 576px) {
+    .stat-card {
+        height: 120px;
+    }
+
+    .icon-container i {
+        font-size: 2rem !important;
+    }
+
+    .icon-container .title {
+        font-size: 14px;
+    }
+
+    .stat-card-back .count {
+        font-size: 24px;
+    }
+}
