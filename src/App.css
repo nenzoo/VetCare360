@@ -1,5 +1,5 @@
 body {
-    background-image: linear-gradient(rgba(248, 246, 246, 0), rgba(0, 0, 0, 0.27)), url(/public/ww.jpg);
+    background-image: linear-gradient(rgba(248, 246, 246, 0), rgba(0, 0, 0, 0.35)), url(/public/new.jpg);
     background-size: cover;
     background-position: center;
     background-repeat: no-repeat;
@@ -18,15 +18,16 @@ body {
 
 .brand {
     padding: 20px 15px;
-    background-color: rgba(9, 0, 0, 0);
+    background-color: rgba(12, 255, 230, 0);
     display: flex;
     align-items: center;
+
 }
 
 .brand-logo {
     width: 40px;
     height: 40px;
-    background-color: #08e1a0;
+    background-color: rgba(8, 225, 160, 0);
     border-radius: 50%;
     display: flex;
     align-items: center;
@@ -78,8 +79,14 @@ body {
     box-shadow: 0 2px 10px rgba(0, 0, 0, 0.36);
     transition: transform 0.3s ease;
     margin-bottom: 20px;
-    background-color: rgba(228, 230, 229, 0.65);
+
     font-family: 'Ubuntu', sans-serif;
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    background-color: rgba(202, 253, 227, 0.2);
+    padding: 20px;
+    border-radius: 10px;
+
 }
 
 .card:hover {
@@ -290,12 +297,10 @@ body {
 
 /* Style pour le background de la carte */
 .owner-search-card {
-   /* background-image: url('/public/search.jpg');
+   background-image: url('/public/search.jpg');
     background-size: cover;
     background-position: center;
-    background-repeat: no-repeat;*/
+    background-repeat: no-repeat;
+
 }
-.owner-search-card .card-body {
-   background-color: rgba(193, 189, 189, 0.31);
-    border-radius: 0.25rem;
-}
+
