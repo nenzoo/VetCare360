@@ -5,7 +5,8 @@ import StatCard from './StatCard.jsx';
 import api from '../../services/api.js';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 
-const Dashboard = () => {
+function Dashboard() {
+    // Je mets les valeurs par défaut
     const [stats, setStats] = useState({
         ownerCount: 0,
         petCount: 0,
@@ -18,26 +19,29 @@ const Dashboard = () => {
     const [monthlyVisits, setMonthlyVisits] = useState([]);
     const [loading, setLoading] = useState(true);
 
-    useEffect(() => {
-        const fetchDashboardData = async () => {
+    // Quand la page charge
+    useEffect(function() {
+        // Fonction pour récupérer les données
+        async function fetchDashboardData() {
             try {
-                // Récupérer les statistiques générales
+                // Je récupère les statistiques générales
                 const data = await api.getDashboardStatsIncremental();
                 setStats(data);
 
-                // Récupérer les statistiques mensuelles des visites
+                // Je récupère les statistiques des visites par mois
                 const visitsData = await api.getMonthlyVisitsStats();
                 setMonthlyVisits(visitsData);
             } catch (error) {
-                console.error('Failed to fetch dashboard data', error);
+                console.error('Erreur récupération données dashboard', error);
             } finally {
                 setLoading(false);
             }
-        };
+        }
 
         fetchDashboardData();
     }, []);
 
+    // Données pour les cartes statistiques
     const statsData = [
         {
             title: 'Propriétaires',
@@ -75,6 +79,7 @@ const Dashboard = () => {
         }
     ];
 
+    // Si c'est en train de charger
     if (loading) {
         return (
             <div className="d-flex justify-content-center align-items-center" style={{ height: '200px' }}>
@@ -85,19 +90,31 @@ const Dashboard = () => {
         );
     }
 
+    // Rendu final de la page
     return (
         <>
-            {/* Statistics Cards */}
+            {/* Les cartes statistiques */}
             <div className="stat-cards">
                 <div className="row mb-4">
-                    {statsData.map((stat, index) => (
-                        <div className="col-lg-3 col-md-6 col-sm-6" key={index}>
-                            <StatCard {...stat} />
-                        </div>
-                    ))}
+                    {statsData.map(function(stat, index) {
+                        return (
+                            <div className="col-lg-3 col-md-6 col-sm-6" key={index}>
+                                <StatCard
+                                    title={stat.title}
+                                    count={stat.count}
+                                    growth={stat.growth}
+                                    icon={stat.icon}
+                                    color={stat.color}
+                                    bgColorClass={stat.bgColorClass}
+                                    link={stat.link}
+                                />
+                            </div>
+                        );
+                    })}
                 </div>
             </div>
-            {/* Charts Row */}
+
+            {/* Rangée des graphiques */}
             <div className="row mb-4">
                 <div className="col-md-8">
                     <div className="card">
@@ -149,24 +166,32 @@ const Dashboard = () => {
                             <div className="chart-container">
                                 {Object.keys(stats.petTypes).length > 0 ? (
                                     <div className="p-3">
-                                        {Object.entries(stats.petTypes).map(([type, count], index) => (
-                                            <div className="mb-2" key={index}>
-                                                <div className="d-flex justify-content-between">
-                                                    <span className="text-capitalize">{type}</span>
-                                                    <span>{count}</span>
+                                        {Object.entries(stats.petTypes).map(function(entry, index) {
+                                            const type = entry[0];
+                                            const count = entry[1];
+
+                                            const colors = ['primary', 'success', 'info', 'warning', 'danger'];
+                                            const color = colors[index % 5];
+
+                                            return (
+                                                <div className="mb-2" key={index}>
+                                                    <div className="d-flex justify-content-between">
+                                                        <span className="text-capitalize">{type}</span>
+                                                        <span>{count}</span>
+                                                    </div>
+                                                    <div className="progress">
+                                                        <div
+                                                            className={`progress-bar bg-${color}`}
+                                                            role="progressbar"
+                                                            style={{ width: `${(count / stats.petCount) * 100}%` }}
+                                                            aria-valuenow={(count / stats.petCount) * 100}
+                                                            aria-valuemin="0"
+                                                            aria-valuemax="100"
+                                                        ></div>
+                                                    </div>
                                                 </div>
-                                                <div className="progress">
-                                                    <div
-                                                        className={`progress-bar bg-${['primary', 'success', 'info', 'warning', 'danger'][index % 5]}`}
-                                                        role="progressbar"
-                                                        style={{ width: `${(count / stats.petCount) * 100}%` }}
-                                                        aria-valuenow={(count / stats.petCount) * 100}
-                                                        aria-valuemin="0"
-                                                        aria-valuemax="100"
-                                                    ></div>
-                                                </div>
-                                            </div>
-                                        ))}
+                                            );
+                                        })}
                                     </div>
                                 ) : (
                                     <div className="d-flex justify-content-center align-items-center h-100">
@@ -180,6 +205,6 @@ const Dashboard = () => {
             </div>
         </>
     );
-};
+}
 
 export default Dashboard;

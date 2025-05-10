@@ -1,320 +1,343 @@
 import axios from 'axios';
 
-const API_URL = 'http://localhost:2000/api'; // Ajustez selon votre configuration
+// L'adresse de mon API
+const API_URL = 'http://localhost:2000/api';
 
-// Fonction pour vérifier si une chaîne est un ObjectId MongoDB valide
-const isValidObjectId = (id) => {
+// Je vérifie si c'est un bon ID MongoDB
+function checkId(id) {
     return id && /^[0-9a-fA-F]{24}$/.test(id);
-};
+}
 
-// Ajout d'une fonction de gestion des erreurs
-const handleApiError = (error) => {
-    console.error('API Error:', error);
+// Pour gérer les erreurs
+function handleError(error) {
+    console.error('ERREUR API:', error);
 
     if (error.response) {
-        // Le serveur a répondu avec un code d'erreur
-        console.error('Status:', error.response.status);
-        console.error('Data:', error.response.data);
+        // Le serveur a répondu avec une erreur
+        console.error('Status code:', error.response.status);
+        console.error('Données erreur:', error.response.data);
     } else if (error.request) {
-        // La requête a été faite mais pas de réponse
-        console.error('No response received:', error.request);
+        // J'ai fait la requête mais pas de réponse
+        console.error('Pas de réponse reçue:', error.request);
     } else {
-        // Une erreur s'est produite lors de la configuration de la requête
-        console.error('Error message:', error.message);
+        // Une erreur quand je configure la requête
+        console.error('Message erreur:', error.message);
     }
 
     throw error;
-};
+}
 
 const api = {
-    // Propriétaires
-    getOwners: async () => {
+    // Récupérer tous les propriétaires
+    getOwners: async function() {
         try {
             const response = await axios.get(`${API_URL}/owners`);
 
-            // Récupérer le nombre d'animaux pour chaque propriétaire
-            const ownersWithPetCount = await Promise.all(
-                response.data.map(async (owner) => {
-                    try {
-                        const petsResponse = await axios.get(`${API_URL}/pets/owner/${owner._id}`);
-                        return {
-                            ...owner,
-                            petCount: petsResponse.data.length,
-                            hasPets: petsResponse.data.length > 0
-                        };
-                    } catch (err) {
-                        return {
-                            ...owner,
-                            petCount: 0,
-                            hasPets: false
-                        };
-                    }
-                })
-            );
+            // Je compte les animaux pour chaque propriétaire
+            const ownersWithPets = [];
 
-            return ownersWithPetCount;
+            for (let i = 0; i < response.data.length; i++) {
+                const owner = response.data[i];
+                try {
+                    const petsResponse = await axios.get(`${API_URL}/pets/owner/${owner._id}`);
+                    const newOwner = {
+                        ...owner,
+                        petCount: petsResponse.data.length,
+                        hasPets: petsResponse.data.length > 0
+                    };
+                    ownersWithPets.push(newOwner);
+                } catch (err) {
+                    const newOwner = {
+                        ...owner,
+                        petCount: 0,
+                        hasPets: false
+                    };
+                    ownersWithPets.push(newOwner);
+                }
+            }
+
+            return ownersWithPets;
         } catch (error) {
-            return handleApiError(error);
+            return handleError(error);
         }
     },
 
-    // Obtenir un pet spécifique par son ID
-    getPetById: async (id) => {
+    // Récupérer un animal par son ID
+    getPetById: async function(id) {
         try {
-            if (!isValidObjectId(id)) {
-                throw new Error("ID d'animal invalide");
+            if (!checkId(id)) {
+                throw new Error("ID d'animal pas bon");
             }
             const response = await axios.get(`${API_URL}/pets/${id}`);
             return response.data;
         } catch (error) {
-            return handleApiError(error);
+            return handleError(error);
         }
     },
 
-    // Obtenir tous les pets
-    getAllPets: async () => {
+    // Récupérer tous les animaux
+    getAllPets: async function() {
         try {
             const response = await axios.get(`${API_URL}/pets`);
             return response.data;
         } catch (error) {
-            return handleApiError(error);
+            return handleError(error);
         }
     },
 
-    searchOwnersByLastName: async (lastName) => {
+    // Chercher propriétaires par nom de famille
+    searchOwnersByLastName: async function(lastName) {
         try {
             const response = await axios.get(`${API_URL}/owners?lastName=${lastName}`);
             return response.data;
         } catch (error) {
-            return handleApiError(error);
+            return handleError(error);
         }
     },
 
-    getOwnerById: async (id) => {
+    // Récupérer un propriétaire par ID
+    getOwnerById: async function(id) {
         try {
-            if (!isValidObjectId(id)) {
-                throw new Error("ID de propriétaire invalide");
+            if (!checkId(id)) {
+                throw new Error("ID propriétaire pas bon");
             }
             const response = await axios.get(`${API_URL}/owners/${id}`);
             return response.data;
         } catch (error) {
-            return handleApiError(error);
+            return handleError(error);
         }
     },
 
-    createOwner: async (ownerData) => {
+    // Créer un propriétaire
+    createOwner: async function(ownerData) {
         try {
             const response = await axios.post(`${API_URL}/owners`, ownerData);
             return response.data;
         } catch (error) {
-            return handleApiError(error);
+            return handleError(error);
         }
     },
 
-    updateOwner: async (id, ownerData) => {
+    // Mettre à jour un propriétaire
+    updateOwner: async function(id, ownerData) {
         try {
-            if (!isValidObjectId(id)) {
-                throw new Error("ID de propriétaire invalide");
+            if (!checkId(id)) {
+                throw new Error("ID propriétaire pas bon");
             }
             const response = await axios.put(`${API_URL}/owners/${id}`, ownerData);
             return response.data;
         } catch (error) {
-            return handleApiError(error);
+            return handleError(error);
         }
     },
 
-    deleteOwner: async (id) => {
+    // Supprimer un propriétaire
+    deleteOwner: async function(id) {
         try {
-            if (!isValidObjectId(id)) {
-                throw new Error("ID de propriétaire invalide");
+            if (!checkId(id)) {
+                throw new Error("ID propriétaire pas bon");
             }
             const response = await axios.delete(`${API_URL}/owners/${id}`);
             return response.data;
         } catch (error) {
-            return handleApiError(error);
+            return handleError(error);
         }
     },
 
-    // Animaux
-    getPetsByOwnerId: async (ownerId) => {
+    // Récupérer les animaux d'un propriétaire
+    getPetsByOwnerId: async function(ownerId) {
         try {
-            if (!isValidObjectId(ownerId)) {
-                throw new Error("ID de propriétaire invalide");
+            if (!checkId(ownerId)) {
+                throw new Error("ID propriétaire pas bon");
             }
             const response = await axios.get(`${API_URL}/pets/owner/${ownerId}`);
             return response.data;
         } catch (error) {
-            return handleApiError(error);
+            return handleError(error);
         }
     },
 
-    createPet: async (petData) => {
+    // Créer un animal
+    createPet: async function(petData) {
         try {
-            console.log("Création d'un animal avec les données:", petData);
+            console.log("Je crée un animal avec:", petData);
 
-            // Vérifier que le propriétaire est bien défini et est un ObjectId valide
+            // Je vérifie que le propriétaire existe
             if (!petData.owner) {
-                throw new Error("Le propriétaire (owner) est requis pour créer un animal");
+                throw new Error("Il faut un propriétaire pour créer un animal");
             }
 
-            if (!isValidObjectId(petData.owner)) {
-                throw new Error("L'ID du propriétaire n'est pas un ObjectId MongoDB valide");
+            if (!checkId(petData.owner)) {
+                throw new Error("L'ID du propriétaire n'est pas bon");
             }
 
             const response = await axios.post(`${API_URL}/pets`, petData);
             return response.data;
         } catch (error) {
-            return handleApiError(error);
+            return handleError(error);
         }
     },
 
-    updatePet: async (id, petData) => {
+    // Mettre à jour un animal
+    updatePet: async function(id, petData) {
         try {
-            if (!isValidObjectId(id)) {
-                throw new Error("ID d'animal invalide");
+            if (!checkId(id)) {
+                throw new Error("ID animal pas bon");
             }
             const response = await axios.put(`${API_URL}/pets/${id}`, petData);
             return response.data;
         } catch (error) {
-            return handleApiError(error);
+            return handleError(error);
         }
     },
 
-    deletePet: async (id) => {
+    // Supprimer un animal
+    deletePet: async function(id) {
         try {
-            if (!isValidObjectId(id)) {
-                throw new Error("ID d'animal invalide");
+            if (!checkId(id)) {
+                throw new Error("ID animal pas bon");
             }
             const response = await axios.delete(`${API_URL}/pets/${id}`);
             return response.data;
         } catch (error) {
-            return handleApiError(error);
+            return handleError(error);
         }
     },
 
-    // Vétérinaires
-    getVeterinarians: async () => {
+    // Récupérer les vétérinaires
+    getVeterinarians: async function() {
         try {
             const response = await axios.get(`${API_URL}/veterinarians`);
             return response.data;
         } catch (error) {
-            return handleApiError(error);
+            return handleError(error);
         }
     },
 
-    // Visites
-    getVisitsByPetId: async (petId) => {
+    // Récupérer les visites d'un animal
+    getVisitsByPetId: async function(petId) {
         try {
-            if (!isValidObjectId(petId)) {
-                throw new Error("ID d'animal invalide");
+            if (!checkId(petId)) {
+                throw new Error("ID animal pas bon");
             }
             const response = await axios.get(`${API_URL}/visits/pets/${petId}`);
             return response.data;
         } catch (error) {
-            return handleApiError(error);
+            return handleError(error);
         }
     },
 
-    // Obtenir une visite par son ID
-    getVisitById: async (id) => {
+    // Récupérer une visite par ID
+    getVisitById: async function(id) {
         try {
-            if (!isValidObjectId(id)) {
-                throw new Error("ID de visite invalide");
+            if (!checkId(id)) {
+                throw new Error("ID visite pas bon");
             }
             const response = await axios.get(`${API_URL}/visits/${id}`);
             return response.data;
         } catch (error) {
-            return handleApiError(error);
+            return handleError(error);
         }
     },
 
     // Créer une visite
-    createVisit: async (visitData) => {
+    createVisit: async function(visitData) {
         try {
             const response = await axios.post(`${API_URL}/visits`, visitData);
             return response.data;
         } catch (error) {
-            return handleApiError(error);
+            return handleError(error);
         }
     },
 
     // Mettre à jour une visite
-    updateVisit: async (id, visitData) => {
+    updateVisit: async function(id, visitData) {
         try {
-            if (!isValidObjectId(id)) {
-                throw new Error("ID de visite invalide");
+            if (!checkId(id)) {
+                throw new Error("ID visite pas bon");
             }
             const response = await axios.put(`${API_URL}/visits/${id}`, visitData);
             return response.data;
         } catch (error) {
-            return handleApiError(error);
+            return handleError(error);
         }
     },
 
     // Supprimer une visite
-    deleteVisit: async (id) => {
+    deleteVisit: async function(id) {
         try {
-            if (!isValidObjectId(id)) {
-                throw new Error("ID de visite invalide");
+            if (!checkId(id)) {
+                throw new Error("ID visite pas bon");
             }
             const response = await axios.delete(`${API_URL}/visits/${id}`);
             return response.data;
         } catch (error) {
-            return handleApiError(error);
+            return handleError(error);
         }
     },
 
-    // Récupérer les statistiques mensuelles de visites
-    getMonthlyVisitsStats: async () => {
+    // Stats des visites par mois
+    getMonthlyVisitsStats: async function() {
         try {
-            // Récupérer toutes les visites
+            // Je récupère toutes les visites
             const response = await axios.get(`${API_URL}/visits`);
             const visits = response.data;
 
-            // Créer un objet pour stocker les comptages mensuels
+            // Pour stocker les comptages par mois
             const monthlyData = {};
 
-            // Obtenir la date d'il y a 12 mois
+            // Date d'il y a 12 mois
             const oneYearAgo = new Date();
             oneYearAgo.setMonth(oneYearAgo.getMonth() - 11);
 
-            // Initialiser tous les mois des 12 derniers mois avec 0 visites
+            // Je mets 0 pour tous les mois
             for (let i = 0; i < 12; i++) {
                 const date = new Date(oneYearAgo);
                 date.setMonth(oneYearAgo.getMonth() + i);
-                const monthKey = `${date.getFullYear()}-${(date.getMonth() + 1).toString().padStart(2, '0')}`;
+                const monthKey = date.getFullYear() + '-' + ('0' + (date.getMonth() + 1)).slice(-2);
                 monthlyData[monthKey] = 0;
             }
 
-            // Compter les visites par mois
+            // Je compte les visites par mois
             if (visits && visits.length > 0) {
-                visits.forEach(visit => {
+                for (let i = 0; i < visits.length; i++) {
+                    const visit = visits[i];
                     if (visit.date) {
                         const visitDate = new Date(visit.date);
-                        // Seulement compter les visites des 12 derniers mois
+                        // Seulement les visites des 12 derniers mois
                         if (visitDate >= oneYearAgo) {
-                            const monthKey = `${visitDate.getFullYear()}-${(visitDate.getMonth() + 1).toString().padStart(2, '0')}`;
-                            monthlyData[monthKey] = (monthlyData[monthKey] || 0) + 1;
+                            const month = visitDate.getMonth() + 1;
+                            const year = visitDate.getFullYear();
+                            const monthKey = year + '-' + ('0' + month).slice(-2);
+
+                            if (monthlyData[monthKey]) {
+                                monthlyData[monthKey] = monthlyData[monthKey] + 1;
+                            } else {
+                                monthlyData[monthKey] = 1;
+                            }
                         }
                     }
-                });
+                }
             }
 
-            // Convertir en tableau pour Recharts
-            const chartData = Object.entries(monthlyData).map(([month, count]) => {
-                // Convertir le format "YYYY-MM" en "MMM YYYY"
-                const [year, monthNum] = month.split('-');
+            // Je transforme pour le graphique
+            const chartData = [];
+            for (const month in monthlyData) {
+                const count = monthlyData[month];
+                // Format "YYYY-MM" en "MMM YYYY"
+                const year = month.split('-')[0];
+                const monthNum = month.split('-')[1];
                 const date = new Date(parseInt(year), parseInt(monthNum) - 1);
                 const monthName = date.toLocaleString('fr-FR', { month: 'short' });
 
-                return {
-                    month: `${monthName} ${year}`,
+                chartData.push({
+                    month: monthName + ' ' + year,
                     count: count
-                };
-            });
+                });
+            }
 
-            // Trier par date
-            chartData.sort((a, b) => {
+            // Je trie par date
+            chartData.sort(function(a, b) {
                 const dateA = new Date(a.month);
                 const dateB = new Date(b.month);
                 return dateA - dateB;
@@ -322,9 +345,9 @@ const api = {
 
             return chartData;
         } catch (error) {
-            console.error('Error fetching monthly visits stats', error);
+            console.error('Erreur stats visites mensuelles', error);
 
-            // En cas d'erreur, renvoyer des données de démonstration
+            // Si erreur, données de démo
             const demoData = [];
             const currentDate = new Date();
 
@@ -335,7 +358,7 @@ const api = {
                 const year = date.getFullYear();
 
                 demoData.push({
-                    month: `${monthName} ${year}`,
+                    month: monthName + ' ' + year,
                     count: Math.floor(Math.random() * 20) + 5
                 });
             }
@@ -344,33 +367,38 @@ const api = {
         }
     },
 
-    // Dashboard data
-    getDashboardStats: async () => {
+    // Stats pour dashboard
+    getDashboardStats: async function() {
         try {
-            // Récupérer toutes les données nécessaires pour le tableau de bord
-            const [owners, pets, vets, visits] = await Promise.all([
-                axios.get(`${API_URL}/owners`),
-                axios.get(`${API_URL}/pets`),
-                axios.get(`${API_URL}/veterinarians`),
-                axios.get(`${API_URL}/visits`) // Vous devrez ajouter cet endpoint côté backend
-            ]);
+            // Je récupère toutes les données pour le tableau de bord
+            const ownersResponse = await axios.get(`${API_URL}/owners`);
+            const petsResponse = await axios.get(`${API_URL}/pets`);
+            const vetsResponse = await axios.get(`${API_URL}/veterinarians`);
+            const visitsResponse = await axios.get(`${API_URL}/visits`);
 
-            // Calculer les statistiques
+            const owners = ownersResponse.data;
+            const pets = petsResponse.data;
+            const vets = vetsResponse.data;
+            const visits = visitsResponse.data;
+
+            // Je calcule les statistiques
             return {
-                ownerCount: owners.data.length,
-                petCount: pets.data.length,
-                vetCount: vets.data.length,
-                visitCount: visits.data ? visits.data.length : 0,
-                recentVisits: visits.data ?
-                    visits.data
-                        .sort((a, b) => new Date(b.date) - new Date(a.date))
+                ownerCount: owners.length,
+                petCount: pets.length,
+                vetCount: vets.length,
+                visitCount: visits ? visits.length : 0,
+                recentVisits: visits ?
+                    visits
+                        .sort(function(a, b) {
+                            return new Date(b.date) - new Date(a.date);
+                        })
                         .slice(0, 5) :
                     []
             };
         } catch (error) {
-            console.error('Error fetching dashboard stats', error);
+            console.error('Erreur stats dashboard', error);
 
-            // En cas d'erreur, renvoyer des données par défaut
+            // Si erreur, données par défaut
             return {
                 ownerCount: 0,
                 petCount: 0,
@@ -381,9 +409,8 @@ const api = {
         }
     },
 
-    // Méthode pour charger les statistiques de manière incrémentale
-    // Utile si l'endpoint de statistiques combinées n'est pas disponible
-    getDashboardStatsIncremental: async () => {
+    // Stats dashboard incrémentales
+    getDashboardStatsIncremental: async function() {
         try {
             let dashboardData = {
                 ownerCount: 0,
@@ -394,49 +421,50 @@ const api = {
                 petTypes: {}
             };
 
-            // Récupérer le nombre de propriétaires
+            // Nombre de propriétaires
             const ownersResponse = await axios.get(`${API_URL}/owners`);
             dashboardData.ownerCount = ownersResponse.data.length;
 
-            // Récupérer les animaux et calculer les statistiques
+            // Les animaux et statistiques
             const petsResponse = await axios.get(`${API_URL}/pets`);
             const pets = petsResponse.data;
             dashboardData.petCount = pets.length;
 
-            // Calculer la répartition par type d'animal
-            pets.forEach(pet => {
+            // Je calcule les types d'animaux
+            for (let i = 0; i < pets.length; i++) {
+                const pet = pets[i];
                 const type = pet.type || 'non spécifié';
-                dashboardData.petTypes[type] = (dashboardData.petTypes[type] || 0) + 1;
-            });
 
-            // Récupérer le nombre de vétérinaires
+                if (dashboardData.petTypes[type]) {
+                    dashboardData.petTypes[type] = dashboardData.petTypes[type] + 1;
+                } else {
+                    dashboardData.petTypes[type] = 1;
+                }
+            }
+
+            // Nombre de vétérinaires
             const vetsResponse = await axios.get(`${API_URL}/veterinarians`);
             dashboardData.vetCount = vetsResponse.data.length;
 
-            // Tenter de récupérer les visites si l'endpoint existe
+            // Je récupère les visites si possible
             try {
                 const visitsResponse = await axios.get(`${API_URL}/visits`);
                 const visits = visitsResponse.data;
                 dashboardData.visitCount = visits.length;
 
-                // Récupérer les visites récentes
+                // Visites récentes
                 dashboardData.recentVisits = visits
-                    .sort((a, b) => new Date(b.date) - new Date(a.date))
+                    .sort(function(a, b) {
+                        return new Date(b.date) - new Date(a.date);
+                    })
                     .slice(0, 5);
             } catch (error) {
-                console.log('Visits endpoint may not be available', error);
-                // Définir des visites de démonstration si les vraies ne sont pas disponibles
-                dashboardData.recentVisits = [
-                    { pet: 'Lucky (Chien)', owner: 'Carlos Estaban', date: '24 Avr, 2025', vet: 'Dr. James Carter', status: 'Terminé' },
-                    { pet: 'Max (Chat)', owner: 'Jean Coleman', date: '23 Avr, 2025', vet: 'Dr. Linda Douglas', status: 'Terminé' },
-                    { pet: 'Jewel (Oiseau)', owner: 'Eduardo Rodriguez', date: '22 Avr, 2025', vet: 'Dr. Sharon Jenkins', status: 'Terminé' },
-                    { pet: 'Freddy (Hamster)', owner: 'David Schneider', date: '21 Avr, 2025', vet: 'Dr. Rafael Ortega', status: 'Terminé' }
-                ];
+                console.log('Problème avec les visites', error);
             }
 
             return dashboardData;
         } catch (error) {
-            console.error('Error fetching dashboard stats incrementally', error);
+            console.error('Erreur stats dashboard incrémentielles', error);
             throw error;
         }
     }
