@@ -128,7 +128,7 @@ const Dashboard = () => {
                                             <YAxis />
                                             <Tooltip />
                                             <Legend />
-                                            <Bar dataKey="count" name="Nombre de visites" fill="#8884d8" />
+                                            <Bar dataKey="count" name="Nombre de visites" fill="#027a6a" />
                                         </BarChart>
                                     </ResponsiveContainer>
                                 ) : (
